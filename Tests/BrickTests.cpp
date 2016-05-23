@@ -70,7 +70,7 @@ const Suite spec[] =
             const Vec3f & pos = e.maybe<Position>().ensure();
             EXPECT(e.hasComponent<Name>());
             EXPECT(e.hasComponent<Position>());
-            printf("%s  %f, %f, %f\n", "", pos.x, pos.y, pos.z);
+            //printf("%s  %f, %f, %f\n", "", pos.x, pos.y, pos.z);
             auto it = findIf(expectedPositions.begin(), expectedPositions.end(), [&](const Vec3f & _vec) { return e.get<Position>().x == _vec.x && e.get<Position>().y == _vec.y && e.get<Position>().z == _vec.z; });
             EXPECT(it != expectedPositions.end());
             expectedPositions.remove(it);
