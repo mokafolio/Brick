@@ -65,6 +65,13 @@ namespace brick
         template<class ...Components>
         void cloneComponentsWithout(const Entity & _from);
 
+        void swap(Entity & _other)
+        {
+            std::swap(m_id, _other.m_id);
+            std::swap(m_version, _other.m_version);
+            std::swap(m_hub, _other.m_hub);
+        }
+
     private:
 
         explicit Entity(Hub * _hub, EntityID _id, stick::Size _version);
