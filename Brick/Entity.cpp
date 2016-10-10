@@ -24,6 +24,11 @@ namespace brick
 
     }
 
+    Entity::operator bool() const
+    {
+        return isValid();
+    }
+
     void Entity::invalidate()
     {
         m_hub = nullptr;

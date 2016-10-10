@@ -18,6 +18,8 @@ namespace brick
 
         ~Entity();
 
+        explicit operator bool() const;
+        
         void invalidate();
 
         void destroy();
