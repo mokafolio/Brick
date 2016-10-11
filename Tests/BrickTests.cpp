@@ -1,4 +1,5 @@
 #include <Brick/Entity.hpp>
+#include <Brick/TypedEntity.hpp>
 #include <Brick/Component.hpp>
 #include <Brick/Hub.hpp>
 #include <Stick/Test.hpp>
@@ -13,6 +14,14 @@ struct Vec3f
     }
 
     Float32 x, y, z;
+};
+
+class A : public TypedEntityT<A>
+{
+};
+
+class B : public TypedEntityT<B>
+{
 };
 
 const Suite spec[] =
@@ -135,6 +144,20 @@ const Suite spec[] =
         EXPECT(!e.hasComponent<Position>());
         EXPECT(e.hasComponent<Velocity>());
         EXPECT(!e.hasComponent<Pivot>());
+    }
+    ,
+    SUITE("TypedEntity Tests")
+    {
+        Hub hub;
+        
+        A a = createEntity<A>(hub);
+        B b = createEntity<B>(hub);
+
+        A c = entityCast<A>(b);
+        EXPECT(!c);
+        TypedEntityT<A> d = a;
+        A e = entityCast<A>(d);
+        EXPECT(e);
     }
 };
 

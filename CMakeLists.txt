@@ -12,11 +12,13 @@ Brick/Component.hpp
 Brick/Entity.hpp
 Brick/EntityID.hpp
 Brick/Hub.hpp
+Brick/TypedEntity.hpp
 )
 
 set (BRICKSRC
 Brick/Entity.cpp
 Brick/Hub.cpp
+Brick/TypedEntity.cpp
 )
 
 add_library (Brick SHARED ${BRICKSRC})
