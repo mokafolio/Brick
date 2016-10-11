@@ -2,10 +2,16 @@
 #define BRICK_TYPEDENTITY_HPP
 
 #include <Brick/Entity.hpp>
+#include <Brick/Component.hpp>
 #include <Stick/TypeInfo.hpp>
 
 namespace brick
 {
+    namespace detail
+    {
+        using EntityTypeHolder = Component<ComponentName("EntityTypeHolder"), stick::TypeID>;
+    }
+    
     class STICK_API TypedEntity : public Entity
     {
     public:
@@ -22,14 +28,17 @@ namespace brick
 
         stick::TypeID entityType() const
         {
-            return stick::TypeInfoT<T>::typeID();
+            if (hasComponent<detail::EntityTypeHolder>())
+                return get<detail::EntityTypeHolder>();
+            return 0;
         }
     };
 
     template<class T>
-    T entityCast(const TypedEntity & _e)
+    T entityCast(const Entity & _e)
     {
-        if(_e.entityType() == stick::TypeInfoT<T>::typeID())
+        if (_e.hasComponent<detail::EntityTypeHolder>() &&
+                _e.get<detail::EntityTypeHolder>() == stick::TypeInfoT<T>::typeID())
         {
             T ret;
             ret.assignEntity(_e);
@@ -51,6 +60,7 @@ namespace brick
     {
         T ret;
         ret.assignEntity(_h.createEntity());
+        ret.template set<detail::EntityTypeHolder>(stick::TypeInfoT<T>::typeID());
         return ret;
     }
 }
