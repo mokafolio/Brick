@@ -11,10 +11,12 @@ namespace brick
     {
         using EntityTypeHolder = Component<ComponentName("EntityTypeHolder"), stick::TypeID>;
     }
-    
+
     class STICK_API TypedEntity : public Entity
     {
     public:
+
+        virtual ~TypedEntity() {};
 
         void assignEntity(const Entity & _e);
 
