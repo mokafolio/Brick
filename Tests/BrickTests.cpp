@@ -32,6 +32,9 @@ const Suite spec[] =
         using Velocity = Component<ComponentName("Velocity"), Vec3f>;
         using Name = Component<ComponentName("Name"), String>;
 
+        if(std::is_copy_constructible<stick::UniquePtr<Float32>>::value)
+            printf("ITS COPY CONSTRUCTIBLE!!!!\n");
+
         EXPECT(Name::name() == "Name");
         Hub hub;
         Entity inv;

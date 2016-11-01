@@ -359,6 +359,18 @@ namespace brick
         };
 
         template<class T>
+        struct IsCopyConstructible
+        {
+            static constexpr bool Value = std::is_copy_constructible<T>::value;
+        };
+
+        template<class T>
+        struct IsCopyConstructible<stick::DynamicArray<T> >
+        {
+            static constexpr bool Value = std::is_copy_constructible<T>::value;
+        };
+
+        template<class T, class Enable = void>
         struct ComponentStorageT : public ComponentStorage
         {
             typedef stick::Maybe<T> MaybeType;
@@ -382,6 +394,43 @@ namespace brick
                 {
                     ca[_to] = *ca[_from];
                 }
+            }
+
+            void resize(stick::Size _s)
+            {
+                componentArray<T>().resize(_s);
+            }
+
+            void resetComponent(stick::Size _index)
+            {
+                // reset the mabye!
+                STICK_ASSERT(_index < componentArray<T>().count());
+                componentArray<T>()[_index].reset();
+            }
+
+            stick::Allocator * m_alloc;
+        };
+
+        template<class T>
+        struct ComponentStorageT < T, typename std::enable_if <!IsCopyConstructible<T>::Value >::type > : public ComponentStorage
+        {
+            typedef stick::Maybe<T> MaybeType;
+            typedef stick::DynamicArray<MaybeType> DynamicArrayType;
+
+            ComponentStorageT(stick::Allocator & _alloc) :
+                ComponentStorage(_alloc.create<DynamicArrayType>(_alloc)),
+                m_alloc(&_alloc)
+            {
+            }
+
+            ~ComponentStorageT()
+            {
+                stick::destroy(&componentArray<T>(), *m_alloc);
+            }
+
+            void cloneComponent(stick::Size _from, stick::Size _to)
+            {
+                //Warning? Fail?
             }
 
             void resize(stick::Size _s)
