@@ -1,7 +1,7 @@
 #ifndef BRICK_SHAREDENTITY_HPP
 #define BRICK_SHAREDENTITY_HPP
 
-#include <Brick/TypedEntity.hpp>
+#include <Brick/Entity.hpp>
 
 namespace brick
 {
@@ -38,51 +38,51 @@ namespace brick
         };
     }
 
-    template<class EntityBase, class RefCounter = detail::SimpleRefCounter>
-    class STICK_API SharedEntityT : public EntityBase
+    template<class RefCounter = detail::SimpleRefCounter>
+    class STICK_API SharedEntity : public Entity
     {
     public:
 
-        SharedEntityT() :
+        SharedEntity() :
             m_refCount(nullptr)
         {
 
         }
 
-        SharedEntityT(const SharedEntityT & _other) :
+        SharedEntity(const SharedEntity & _other) :
             m_refCount(_other.m_refCount),
-            EntityBase(_other)
+            Entity(_other)
         {
             if (m_refCount)
                 m_refCount->increment();
         }
 
-        SharedEntityT(SharedEntityT && _other) :
+        SharedEntity(SharedEntity && _other) :
             m_refCount(std::move(_other.m_refCount)),
-            EntityBase(std::move(_other))
+            Entity(std::move(_other))
         {
             _other.m_refCount = nullptr;
         }
 
-        ~SharedEntityT()
+        ~SharedEntity()
         {
             invalidate();
         }
 
-        SharedEntityT & operator = (const SharedEntityT & _other)
+        SharedEntity & operator = (const SharedEntity & _other)
         {
             m_refCount = _other.m_refCount;
             if (m_refCount)
                 m_refCount->increment();
-            EntityBase::operator = (_other);
+            Entity::operator = (_other);
             return *this;
         }
 
-        SharedEntityT & operator = (SharedEntityT && _other)
+        SharedEntity & operator = (SharedEntity && _other)
         {
             m_refCount = std::move(_other.m_refCount);
             _other.m_refCount = nullptr;
-            EntityBase::operator = (std::move(_other));
+            Entity::operator = (std::move(_other));
             return *this;
         }
 
@@ -94,11 +94,11 @@ namespace brick
                 if (m_refCount->count() == 0)
                 {
                     stick::destroy(m_refCount);
-                    EntityBase::destroy();
+                    Entity::destroy();
                 }
                 m_refCount = nullptr;
             }
-            EntityBase::invalidate();
+            Entity::invalidate();
         }
 
         stick::Size referenceCount() const
@@ -106,27 +106,21 @@ namespace brick
             return m_refCount ? m_refCount->count() : 0;
         }
 
-        void initialize(const EntityBase & _e, stick::Allocator & _alloc = stick::defaultAllocator())
+        void assignEntity(const Entity & _e, stick::Allocator & _alloc = stick::defaultAllocator())
         {
             invalidate();
             m_refCount = _alloc.create<RefCounter>();
-            EntityBase::assignEntity(_e);
+            Entity::assignEntity(_e);
         }
 
     private:
 
-        using EntityBase::invalidate;
-        using EntityBase::destroy;
+        //using Entity::assignEntity;
+        using Entity::invalidate;
+        using Entity::destroy;
+
         RefCounter * m_refCount;
     };
-
-    template<class EntityBase>
-    SharedEntityT<EntityBase> createSharedEntity(Hub & _hub, stick::Allocator & _alloc = stick::defaultAllocator())
-    {
-         SharedEntityT<EntityBase> ret;
-         ret.initialize(createEntity<EntityBase>(_hub), _alloc);
-         return ret;
-    }
 }
 
 #endif //BRICK_SHAREDENTITY_HPP

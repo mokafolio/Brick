@@ -1,7 +1,7 @@
 #ifndef BRICK_TYPEDENTITY_HPP
 #define BRICK_TYPEDENTITY_HPP
 
-#include <Brick/Entity.hpp>
+#include <Brick/SharedEntity.hpp>
 #include <Brick/Component.hpp>
 #include <Stick/TypeInfo.hpp>
 
@@ -18,21 +18,29 @@ namespace brick
 
         virtual ~TypedEntity() {};
 
-        virtual stick::TypeID entityType() const = 0;
-    };
-
-    template<class T>
-    class STICK_API TypedEntityT : public TypedEntity
-    {
-    public:
-
-        stick::TypeID entityType() const
+        stick::TypeID entityType()
         {
             if (hasComponent<detail::EntityTypeHolder>())
                 return get<detail::EntityTypeHolder>();
             return 0;
         }
     };
+
+    template<class RefCounter = detail::SimpleRefCounter>
+    class STICK_API SharedTypedEntityT : public SharedEntity<RefCounter>
+    {
+    public:
+        virtual ~SharedTypedEntityT() {};
+
+        stick::TypeID entityType()
+        {
+            if (SharedEntity<RefCounter>::template hasComponent<detail::EntityTypeHolder>())
+                return SharedEntity<RefCounter>::template get<detail::EntityTypeHolder>();
+            return 0;
+        }
+    };
+
+    using SharedTypedEntity = SharedTypedEntityT<>;
 
     template<class T>
     T entityCast(const Entity & _e)

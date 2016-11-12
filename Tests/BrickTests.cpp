@@ -17,26 +17,17 @@ struct Vec3f
     Float32 x, y, z;
 };
 
-class A : public TypedEntityT<A>
+class A : public TypedEntity
 {
 };
 
-class B : public TypedEntityT<B>
+class B : public TypedEntity
 {
 };
 
-struct C : public TypedEntityT<C>
+struct C : public SharedTypedEntity
 {
-    void destroy()
-    {
-        s_destructionCount++;
-        TypedEntityT<C>::destroy();
-    }
-
-    static Size s_destructionCount;
 };
-
-Size C::s_destructionCount = 0;
 
 const Suite spec[] =
 {
@@ -171,15 +162,14 @@ const Suite spec[] =
 
         A c = entityCast<A>(b);
         EXPECT(!c);
-        TypedEntityT<A> d = a;
+        TypedEntity d = a;
         A e = entityCast<A>(d);
         EXPECT(e);
     },
     SUITE("SharedEntity Tests")
     {
-        C::s_destructionCount = 0;
         Hub hub;
-        auto tent = createSharedEntity<C>(hub);
+        auto tent = createEntity<C>(hub);
         EXPECT(tent.isValid());
         EXPECT(tent.referenceCount() == 1);
         auto tent2 = tent;
@@ -189,13 +179,11 @@ const Suite spec[] =
         EXPECT(tent.isValid());
         EXPECT(tent2.isValid());
         tent.invalidate();
-        EXPECT(C::s_destructionCount == 0);
         EXPECT(!tent.isValid());
         EXPECT(tent2.isValid());
         EXPECT(tent2.referenceCount() == 1);
         tent2.invalidate();
         EXPECT(!tent2.isValid());
-        EXPECT(C::s_destructionCount == 1);
     }
 };
 
