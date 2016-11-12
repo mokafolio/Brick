@@ -94,12 +94,24 @@ namespace brick
                 if (m_refCount->count() == 0)
                 {
                     stick::destroy(m_refCount);
-                    m_refCount = nullptr;
                     EntityBase::destroy();
                 }
+                m_refCount = nullptr;
             }
+            EntityBase::invalidate();
         }
 
+        stick::Size referenceCount() const
+        {
+            return m_refCount ? m_refCount->count() : 0;
+        }
+
+        void initialize(const EntityBase & _e, stick::Allocator & _alloc = stick::defaultAllocator())
+        {
+            invalidate();
+            m_refCount = _alloc.create<RefCounter>();
+            EntityBase::assignEntity(_e);
+        }
 
     private:
 
@@ -107,6 +119,14 @@ namespace brick
         using EntityBase::destroy;
         RefCounter * m_refCount;
     };
+
+    template<class EntityBase>
+    SharedEntityT<EntityBase> createSharedEntity(Hub & _hub, stick::Allocator & _alloc = stick::defaultAllocator())
+    {
+         SharedEntityT<EntityBase> ret;
+         ret.initialize(createEntity<EntityBase>(_hub), _alloc);
+         return ret;
+    }
 }
 
 #endif //BRICK_SHAREDENTITY_HPP

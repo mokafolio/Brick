@@ -25,6 +25,19 @@ class B : public TypedEntityT<B>
 {
 };
 
+struct C : public TypedEntityT<C>
+{
+    void destroy()
+    {
+        s_destructionCount++;
+        TypedEntityT<C>::destroy();
+    }
+
+    static Size s_destructionCount;
+};
+
+Size C::s_destructionCount = 0;
+
 const Suite spec[] =
 {
     SUITE("Basic Tests")
@@ -33,7 +46,7 @@ const Suite spec[] =
         using Velocity = Component<ComponentName("Velocity"), Vec3f>;
         using Name = Component<ComponentName("Name"), String>;
 
-        if(std::is_copy_constructible<stick::UniquePtr<Float32>>::value)
+        if (std::is_copy_constructible<stick::UniquePtr<Float32>>::value)
             printf("ITS COPY CONSTRUCTIBLE!!!!\n");
 
         EXPECT(Name::name() == "Name");
@@ -152,7 +165,7 @@ const Suite spec[] =
     SUITE("TypedEntity Tests")
     {
         Hub hub;
-        
+
         A a = createEntity<A>(hub);
         B b = createEntity<B>(hub);
 
@@ -164,8 +177,25 @@ const Suite spec[] =
     },
     SUITE("SharedEntity Tests")
     {
+        C::s_destructionCount = 0;
         Hub hub;
-        SharedEntityT<Entity> tent = createEntity<SharedEntityT<Entity>>(hub);
+        auto tent = createSharedEntity<C>(hub);
+        EXPECT(tent.isValid());
+        EXPECT(tent.referenceCount() == 1);
+        auto tent2 = tent;
+        EXPECT(tent == tent2);
+        EXPECT(tent.referenceCount() == 2);
+        EXPECT(tent2.referenceCount() == 2);
+        EXPECT(tent.isValid());
+        EXPECT(tent2.isValid());
+        tent.invalidate();
+        EXPECT(C::s_destructionCount == 0);
+        EXPECT(!tent.isValid());
+        EXPECT(tent2.isValid());
+        EXPECT(tent2.referenceCount() == 1);
+        tent2.invalidate();
+        EXPECT(!tent2.isValid());
+        EXPECT(C::s_destructionCount == 1);
     }
 };
 
