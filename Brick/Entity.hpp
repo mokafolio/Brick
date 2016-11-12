@@ -74,6 +74,8 @@ namespace brick
             std::swap(m_hub, _other.m_hub);
         }
 
+        void assignEntity(const Entity & _e);
+
     private:
 
         explicit Entity(Hub * _hub, EntityID _id, stick::Size _version);

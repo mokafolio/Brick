@@ -1,6 +1,8 @@
 #ifndef BRICK_SHAREDENTITY_HPP
 #define BRICK_SHAREDENTITY_HPP
 
+#include <Brick/TypedEntity.hpp>
+
 namespace brick
 {
     namespace detail
@@ -25,7 +27,7 @@ namespace brick
                 --m_count;
             }
 
-            Size count() const
+            stick::Size count() const
             {
                 return m_count;
             }
@@ -47,9 +49,41 @@ namespace brick
 
         }
 
+        SharedEntityT(const SharedEntityT & _other) :
+            m_refCount(_other.m_refCount),
+            EntityBase(_other)
+        {
+            if (m_refCount)
+                m_refCount->increment();
+        }
+
+        SharedEntityT(SharedEntityT && _other) :
+            m_refCount(std::move(_other.m_refCount)),
+            EntityBase(std::move(_other))
+        {
+            _other.m_refCount = nullptr;
+        }
+
         ~SharedEntityT()
         {
             invalidate();
+        }
+
+        SharedEntityT & operator = (const SharedEntityT & _other)
+        {
+            m_refCount = _other.m_refCount;
+            if (m_refCount)
+                m_refCount->increment();
+            EntityBase::operator = (_other);
+            return *this;
+        }
+
+        SharedEntityT & operator = (SharedEntityT && _other)
+        {
+            m_refCount = std::move(_other.m_refCount);
+            _other.m_refCount = nullptr;
+            EntityBase::operator = (std::move(_other));
+            return *this;
         }
 
         void invalidate()
@@ -59,7 +93,9 @@ namespace brick
                 m_refCount->decrement();
                 if (m_refCount->count() == 0)
                 {
-                    
+                    stick::destroy(m_refCount);
+                    m_refCount = nullptr;
+                    EntityBase::destroy();
                 }
             }
         }

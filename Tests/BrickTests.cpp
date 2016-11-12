@@ -2,6 +2,7 @@
 #include <Brick/TypedEntity.hpp>
 #include <Brick/Component.hpp>
 #include <Brick/Hub.hpp>
+#include <Brick/SharedEntity.hpp>
 #include <Stick/Test.hpp>
 
 using namespace stick;
@@ -147,8 +148,7 @@ const Suite spec[] =
         EXPECT(!e.hasComponent<Position>());
         EXPECT(e.hasComponent<Velocity>());
         EXPECT(!e.hasComponent<Pivot>());
-    }
-    ,
+    },
     SUITE("TypedEntity Tests")
     {
         Hub hub;
@@ -161,6 +161,11 @@ const Suite spec[] =
         TypedEntityT<A> d = a;
         A e = entityCast<A>(d);
         EXPECT(e);
+    },
+    SUITE("SharedEntity Tests")
+    {
+        Hub hub;
+        SharedEntityT<Entity> tent = createEntity<SharedEntityT<Entity>>(hub);
     }
 };
 

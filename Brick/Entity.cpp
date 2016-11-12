@@ -24,6 +24,11 @@ namespace brick
 
     }
 
+    void Entity::assignEntity(const Entity & _e)
+    {
+        operator=(_e);
+    }
+
     Entity::operator bool() const
     {
         return isValid();

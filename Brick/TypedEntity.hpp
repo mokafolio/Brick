@@ -18,8 +18,6 @@ namespace brick
 
         virtual ~TypedEntity() {};
 
-        void assignEntity(const Entity & _e);
-
         virtual stick::TypeID entityType() const = 0;
     };
 
