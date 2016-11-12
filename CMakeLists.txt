@@ -12,6 +12,7 @@ Brick/Component.hpp
 Brick/Entity.hpp
 Brick/EntityID.hpp
 Brick/Hub.hpp
+Brick/SharedEntity.hpp
 Brick/TypedEntity.hpp
 )
 
