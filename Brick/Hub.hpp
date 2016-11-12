@@ -228,7 +228,7 @@ namespace brick
             storage->resize(m_nextEntityID);
             typedef stick::UniquePtr<ComponentStorage> UPtr;
             typedef UPtr::Cleanup Cleanup;
-            m_componentStorage[_cid] = UPtr(storage, Cleanup(*m_alloc));
+            m_componentStorage[_cid] = UPtr(storage, Cleanup());
         }
 
         template<class T>
@@ -384,7 +384,7 @@ namespace brick
 
             ~ComponentStorageT()
             {
-                stick::destroy(&componentArray<T>(), *m_alloc);
+                stick::destroy(&componentArray<T>());
             }
 
             void cloneComponent(stick::Size _from, stick::Size _to)
