@@ -425,7 +425,7 @@ namespace brick
 
             ~ComponentStorageT()
             {
-                stick::destroy(&componentArray<T>(), *m_alloc);
+                stick::destroy(&componentArray<T>());
             }
 
             void cloneComponent(stick::Size _from, stick::Size _to)
