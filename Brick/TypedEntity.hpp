@@ -63,11 +63,11 @@ namespace brick
         return ret;
     }
 
-    template<class T>
-    T createEntity(Hub & _h)
+    template<class T, class...Args>
+    T createEntity(Hub & _h, Args..._args)
     {
         T ret;
-        ret.assignEntity(_h.createEntity());
+        ret.assignEntity(_h.createEntity(), _args...);
         ret.template set<detail::EntityTypeHolder>(stick::TypeInfoT<T>::typeID());
         return ret;
     }

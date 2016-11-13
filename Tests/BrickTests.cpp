@@ -170,6 +170,7 @@ const Suite spec[] =
     {
         Hub hub;
         auto tent = createEntity<C>(hub);
+        auto blubb = createEntity<C>(hub);
         EXPECT(tent.isValid());
         EXPECT(tent.referenceCount() == 1);
         auto tent2 = tent;
@@ -181,6 +182,17 @@ const Suite spec[] =
         tent.invalidate();
         EXPECT(!tent.isValid());
         EXPECT(tent2.isValid());
+        EXPECT(tent2.referenceCount() == 1);
+
+        {
+            C tent3(tent2);
+            EXPECT(tent2.referenceCount() == 2);
+            EXPECT(tent3.referenceCount() == 2);
+            tent3 = blubb;
+            EXPECT(tent2.referenceCount() == 1);
+            EXPECT(tent3.referenceCount() == 2);
+            EXPECT(blubb.referenceCount() == 2);
+        }
         EXPECT(tent2.referenceCount() == 1);
         tent2.invalidate();
         EXPECT(!tent2.isValid());

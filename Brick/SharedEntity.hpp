@@ -2,6 +2,7 @@
 #define BRICK_SHAREDENTITY_HPP
 
 #include <Brick/Entity.hpp>
+#include <Brick/Component.hpp>
 
 namespace brick
 {
@@ -43,83 +44,92 @@ namespace brick
     {
     public:
 
-        SharedEntity() :
-            m_refCount(nullptr)
+        using RefCounterComponent = Component<ComponentName("RefCounter"), RefCounter>;
+
+        SharedEntity()
         {
 
         }
 
         SharedEntity(const SharedEntity & _other) :
-            m_refCount(_other.m_refCount),
             Entity(_other)
         {
-            if (m_refCount)
-                m_refCount->increment();
+            auto refCount = maybe<RefCounterComponent>();
+            if (refCount)
+            {
+                (*refCount).increment();
+            }
         }
 
         SharedEntity(SharedEntity && _other) :
-            m_refCount(std::move(_other.m_refCount)),
             Entity(std::move(_other))
         {
-            _other.m_refCount = nullptr;
+            _other.Entity::invalidate();
         }
 
         ~SharedEntity()
         {
-            invalidate();
+            if (isValid())
+                invalidate();
         }
 
         SharedEntity & operator = (const SharedEntity & _other)
         {
-            m_refCount = _other.m_refCount;
-            if (m_refCount)
-                m_refCount->increment();
-            Entity::operator = (_other);
+            invalidate();
+            assignEntity(_other);
             return *this;
         }
 
-        SharedEntity & operator = (SharedEntity && _other)
-        {
-            m_refCount = std::move(_other.m_refCount);
-            _other.m_refCount = nullptr;
-            Entity::operator = (std::move(_other));
-            return *this;
-        }
+        // SharedEntity & operator = (SharedEntity && _other)
+        // {
+        //     invalidate();
+        //     _other.Entity::invalidate();
+        //     return *this;
+        // }
 
         void invalidate()
         {
-            if (m_refCount)
+            if (!isValid()) return;
+            auto refCount = maybe<RefCounterComponent>();
+            if (refCount)
             {
-                m_refCount->decrement();
-                if (m_refCount->count() == 0)
+                (*refCount).decrement();
+                if ((*refCount).count() == 0)
                 {
-                    stick::destroy(m_refCount);
                     Entity::destroy();
                 }
-                m_refCount = nullptr;
+                else
+                {
+                    Entity::invalidate();
+                }
             }
-            Entity::invalidate();
         }
 
         stick::Size referenceCount() const
         {
-            return m_refCount ? m_refCount->count() : 0;
+            auto refCount = maybe<RefCounterComponent>();
+            return refCount ? (*refCount).count() : 0;
         }
 
-        void assignEntity(const Entity & _e, stick::Allocator & _alloc = stick::defaultAllocator())
+        void assignEntity(const Entity & _e)
         {
             invalidate();
-            m_refCount = _alloc.create<RefCounter>();
             Entity::assignEntity(_e);
+            auto refCount = maybe<RefCounterComponent>();
+            if (!refCount)
+            {
+                set<RefCounterComponent>(RefCounter());
+            }
+            else
+            {
+                const_cast<RefCounter &>(*refCount).increment();
+            }
         }
 
     private:
 
-        //using Entity::assignEntity;
         using Entity::invalidate;
         using Entity::destroy;
-
-        RefCounter * m_refCount;
     };
 }
 
