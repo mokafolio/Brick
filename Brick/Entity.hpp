@@ -16,7 +16,15 @@ namespace brick
 
         Entity();
 
+        Entity(const Entity &) = default;
+
+        Entity(Entity &&) = default;
+
         ~Entity();
+
+        Entity & operator = (const Entity &) = default;
+
+        Entity & operator = (Entity &&) = default;
 
         explicit operator bool() const;
         

@@ -5,6 +5,8 @@
 #include <Brick/SharedEntity.hpp>
 #include <Stick/Test.hpp>
 
+#include <vector>
+
 using namespace stick;
 using namespace brick;
 
@@ -169,8 +171,8 @@ const Suite spec[] =
     SUITE("SharedEntity Tests")
     {
         Hub hub;
-        auto tent = createEntity<C>(hub);
-        auto blubb = createEntity<C>(hub);
+        auto tent = createEntity<SharedTypedEntity>(hub);
+        auto blubb = createEntity<SharedTypedEntity>(hub);
         EXPECT(tent.isValid());
         EXPECT(tent.referenceCount() == 1);
         auto tent2 = tent;
@@ -185,7 +187,7 @@ const Suite spec[] =
         EXPECT(tent2.referenceCount() == 1);
 
         {
-            C tent3(tent2);
+            SharedTypedEntity tent3(tent2);
             EXPECT(tent2.referenceCount() == 2);
             EXPECT(tent3.referenceCount() == 2);
             tent3 = blubb;
@@ -193,8 +195,32 @@ const Suite spec[] =
             EXPECT(tent3.referenceCount() == 2);
             EXPECT(blubb.referenceCount() == 2);
         }
+
+        Entity e = tent2;
+        {
+            SharedTypedEntity f = reinterpretEntity<SharedTypedEntity>(e);
+            EXPECT(tent2.referenceCount() == 2);
+            EXPECT(f.referenceCount() == 2);
+        }
         EXPECT(tent2.referenceCount() == 1);
-        tent2.invalidate();
+        stick::DynamicArray<SharedTypedEntity> array;
+        array.append(tent2);
+        array.append(tent2);
+        array.append(tent2);
+        array.append(tent2);
+        array.append(tent2);
+        // std::vector<C> array;
+        // array.push_back(tent2);
+        // array.push_back(tent2);
+        // array.push_back(tent2);
+        // array.push_back(tent2);
+        // array.push_back(tent2);
+
+        printf("WHAT %lu\n", tent2.referenceCount());
+        EXPECT(tent2.referenceCount() == 6);
+        SharedTypedEntity tent3(std::move(tent2));
+        EXPECT(tent3.referenceCount() == 6);
+        EXPECT(tent3.isValid());
         EXPECT(!tent2.isValid());
     }
 };

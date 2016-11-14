@@ -16,8 +16,6 @@ namespace brick
     {
     public:
 
-        virtual ~TypedEntity() {};
-
         stick::TypeID entityType()
         {
             if (hasComponent<detail::EntityTypeHolder>())
@@ -30,8 +28,7 @@ namespace brick
     class STICK_API SharedTypedEntityT : public SharedEntity<RefCounter>
     {
     public:
-        virtual ~SharedTypedEntityT() {};
-
+        
         stick::TypeID entityType()
         {
             if (SharedEntity<RefCounter>::template hasComponent<detail::EntityTypeHolder>())
@@ -45,8 +42,8 @@ namespace brick
     template<class T>
     T entityCast(const Entity & _e)
     {
-        if (_e.hasComponent<detail::EntityTypeHolder>() &&
-                _e.get<detail::EntityTypeHolder>() == stick::TypeInfoT<T>::typeID())
+        auto maybe = _e.maybe<detail::EntityTypeHolder>();
+        if (maybe && (*maybe) == stick::TypeInfoT<T>::typeID())
         {
             T ret;
             ret.assignEntity(_e);

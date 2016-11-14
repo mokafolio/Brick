@@ -20,7 +20,7 @@ namespace brick
 
     Hub::~Hub()
     {
-
+        printf("~HUB\n");
     }
 
     Entity Hub::createEntity()
