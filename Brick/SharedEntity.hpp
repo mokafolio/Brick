@@ -15,12 +15,6 @@ namespace brick
             SimpleRefCounter() :
                 m_count(1)
             {
-                printf("MAKE REF COUNT\n");
-            }
-
-            ~SimpleRefCounter()
-            {
-                printf("DESTRUCT REF COUNT\n");
             }
 
             void increment()
@@ -62,7 +56,6 @@ namespace brick
             auto refCount = maybe<RefCounterComponent>();
             if (refCount)
             {
-                printf("COPY INCRM\n");
                 (*refCount).increment();
             }
         }
@@ -70,16 +63,13 @@ namespace brick
         SharedEntity(SharedEntity && _other) :
             Entity(std::move(_other))
         {
-            printf("MOVE CONS\n");
             _other.Entity::invalidate();
         }
 
         ~SharedEntity()
         {
-            printf("~SharedEntity()\n");
             if (isValid())
             {
-                printf("INVALIDATE\n");
                 invalidate();
             }
         }
@@ -93,7 +83,6 @@ namespace brick
 
         SharedEntity & operator = (SharedEntity && _other)
         {
-            printf("MOVE DAT YOOOOOOOOOOO\n");
             invalidate();
             Entity::operator = (std::move(_other));
             _other.Entity::invalidate();
@@ -107,10 +96,8 @@ namespace brick
             if (refCount)
             {
                 (*refCount).decrement();
-                printf("DA COUNT BRO %lu\n", (*refCount).count());
                 if ((*refCount).count() == 0)
                 {
-                    printf("DESTRYO ENT\n");
                     Entity::destroy();
                 }
                 else
@@ -133,12 +120,10 @@ namespace brick
             auto refCount = maybe<RefCounterComponent>();
             if (!refCount)
             {
-                printf("NEW REF COUNT\n");
                 set<RefCounterComponent>(RefCounter());
             }
             else
             {
-                printf("INC REF COUNT\n");
                 const_cast<RefCounter &>(*refCount).increment();
             }
         }
