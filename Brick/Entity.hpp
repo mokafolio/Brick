@@ -27,7 +27,7 @@ namespace brick
         Entity & operator = (Entity &&) = default;
 
         explicit operator bool() const;
-        
+
         void invalidate();
 
         void destroy();
@@ -54,6 +54,12 @@ namespace brick
 
         template<class T>
         const typename T::ValueType & get() const;
+
+        template<class T>
+        typename T::ValueType & getOrDefault(const typename T::ValueType & _default = typename T::ValueType());
+
+        template<class T>
+        const typename T::ValueType & getOrDefault(const typename T::ValueType & _default = typename T::ValueType()) const;
 
         bool operator == (const Entity & _other) const;
 
@@ -137,6 +143,22 @@ namespace brick
     typename T::ValueType & Entity::get()
     {
         return maybe<T>().value();
+    }
+
+    template<class T>
+    typename T::ValueType & Entity::getOrDefault(const typename T::ValueType & _default)
+    {
+        auto m = maybe<T>();
+        if (m) return *m;
+        return _default;
+    }
+
+    template<class T>
+    const typename T::ValueType & Entity::getOrDefault(const typename T::ValueType & _default) const
+    {
+        auto m = maybe<T>();
+        if (m) return *m;
+        return _default;
     }
 
     template<class T>
