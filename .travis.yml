@@ -6,11 +6,8 @@ compiler:
     - clang
 #    - gcc
 before_script:
-    - git clone https://github.com/mokafolio/Stick.git
-    - cd Stick
-    - mkdir build && cd build && cmake .. && make install && cd ../..
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake -DBuildSubmodules=On ..
 
 script: make check
