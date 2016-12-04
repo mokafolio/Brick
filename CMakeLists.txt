@@ -14,7 +14,7 @@ else()
 endif()
 
 
-set (BRICKDEPS Stick)
+set (BRICKDEPS Stick pthread)
 
 set (BRICKINC 
 Brick/Component.hpp
