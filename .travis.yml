@@ -11,3 +11,4 @@ before_script:
     - cmake -DBuildSubmodules=On ..
 
 script: make check
+
