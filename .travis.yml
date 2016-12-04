@@ -4,11 +4,10 @@ dist: trusty
 language: cpp
 compiler: 
     - clang
-#    - gcc
+    - gcc
 before_script:
     - mkdir build
     - cd build
     - cmake -DBuildSubmodules=On ..
 
 script: make check
-
