@@ -3,12 +3,8 @@ sudo: required
 dist: trusty
 language: cpp
 compiler: 
-    #- clang
+    - clang
     - gcc
-# before_install:
-#   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-#   - sudo apt-get update
-#   - sudo apt-get install -qq g++-5
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
 before_script:
@@ -22,6 +18,6 @@ addons:
     packages:
     - gcc-5
     - g++-5
-    #- clang
+    - clang
 
 script: make check
