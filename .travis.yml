@@ -5,9 +5,21 @@ language: cpp
 compiler: 
     - clang
     - gcc
+install:
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-5.4" CC="gcc-5.4"; fi
 before_script:
     - mkdir build
     - cd build
     - cmake -DBuildSubmodules=On ..
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - libyajl-dev
+    - libxml2-dev
+    - gcc-5.4
+    - g++-5.4
+    - clang
 
 script: make check
