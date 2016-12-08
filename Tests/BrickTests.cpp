@@ -12,15 +12,15 @@ using namespace brick;
 
 struct Vec3f
 {
-    Vec3f() = default;
-    Vec3f(const Vec3f & _other) = default;
-    Vec3f(Float32 _x, Float32 _y, Float32 _z) :
-        x(_x),
-        y(_y),
-        z(_z)
-    {
+    // Vec3f() = default;
+    // Vec3f(const Vec3f & _other) = default;
+    // Vec3f(Float32 _x, Float32 _y, Float32 _z) :
+    //     x(_x),
+    //     y(_y),
+    //     z(_z)
+    // {
 
-    }
+    // }
 
     Float32 x, y, z;
 };
@@ -68,7 +68,7 @@ const Suite spec[] =
         EXPECT(a.get<Position>().x == 1.0f);
         EXPECT(a.get<Position>().y == 2.0f);
         EXPECT(a.get<Position>().z == 3.0f);
-        a.set<Velocity>(Vec3f(1.0f, 2.0f, 3.0f));
+        a.set<Velocity>((Vec3f){1.0f, 2.0f, 3.0f});
         EXPECT(a.hasComponent<Velocity>());
         a.removeComponent<Velocity>();
         EXPECT(!a.hasComponent<Velocity>());
@@ -240,7 +240,7 @@ const Suite spec[] =
 
 int main(int _argc, const char * _args[])
 {
-    Vec3f t(1.0f, 2.0f, 3.0f);
+    Vec3f t{1.0f, 2.0f, 3.0f};
     fakeInit((Vec3f) {1.0f, 2.0f, 3.0f});
 
     return runTests(spec, _argc, _args);
