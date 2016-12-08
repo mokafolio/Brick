@@ -15,9 +15,9 @@ struct Vec3f
     Vec3f() = default;
     Vec3f(const Vec3f & _other) = default;
     Vec3f(Float32 _x, Float32 _y, Float32 _z) :
-    x(_x),
-    y(_y),
-    z(_z)
+        x(_x),
+        y(_y),
+        z(_z)
     {
 
     }
@@ -37,13 +37,17 @@ struct C : public SharedTypedEntity
 {
 };
 
+template<class...Args>
+inline void fakeInit(Args..._args)
+{
+    Vec3f s;
+    s = (Vec3f) {std::forward<Args>(_args)...};
+}
+
 const Suite spec[] =
 {
     SUITE("Basic Tests")
     {
-        Vec3f t(1.0f, 2.0f, 3.0f);
-        Vec3f s;
-        s = {t};
         using Position = Component<ComponentName("Position"), Vec3f>;
         using Velocity = Component<ComponentName("Velocity"), Vec3f>;
         using Name = Component<ComponentName("Name"), String>;
@@ -236,5 +240,8 @@ const Suite spec[] =
 
 int main(int _argc, const char * _args[])
 {
+    Vec3f t(1.0f, 2.0f, 3.0f);
+    fakeInit((Vec3f) {1.0f, 2.0f, 3.0f});
+
     return runTests(spec, _argc, _args);
 }
