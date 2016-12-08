@@ -3,11 +3,11 @@ sudo: false
 #dist: trusty
 language: cpp
 compiler: 
-    - clang
+    #- clang
     - gcc
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
-    - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.8"; fi
+    #- if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.8"; fi
 before_script:
     - mkdir build
     - cd build
@@ -19,7 +19,7 @@ addons:
     packages:
     - gcc-5
     - g++-5
-    - clang-3.8
-    - lldb-3.8
+    #- clang-3.8
+    #- lldb-3.8
 
 script: make check
