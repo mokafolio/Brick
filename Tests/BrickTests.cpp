@@ -40,7 +40,7 @@ struct C : public SharedTypedEntity
 template<class...Args>
 inline void fakeInit(Args..._args)
 {
-    Vec3f s;
+    Vec3f s{1.0f, 2.0f, 0.3f};
     s = (Vec3f) {std::forward<Args>(_args)...};
 }
 
