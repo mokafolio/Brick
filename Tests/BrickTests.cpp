@@ -41,6 +41,9 @@ const Suite spec[] =
 {
     SUITE("Basic Tests")
     {
+        Vec3f t(1.0f, 2.0f, 3.0f);
+        Vec3f s;
+        s = {t};
         using Position = Component<ComponentName("Position"), Vec3f>;
         using Velocity = Component<ComponentName("Velocity"), Vec3f>;
         using Name = Component<ComponentName("Name"), String>;

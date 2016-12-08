@@ -217,7 +217,7 @@ namespace brick
             {
                 createStorageForComponentID<ValueType>(cid);
             }
-            (*storage).componentArray<ValueType>()[_id] = (ValueType) {std::forward<Args>(_args)...};
+            (*storage).componentArray<ValueType>()[_id] = (ValueType){std::forward<Args>(_args)...};
             m_componentBitsets[_id][cid] = true;
         }
 
