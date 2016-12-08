@@ -16,10 +16,8 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - libyajl-dev
-    - libxml2-dev
-    - gcc-5.4
-    - g++-5.4
+    - gcc-5
+    - g++-5
     - clang
 
 script: make check
