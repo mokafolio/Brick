@@ -18,6 +18,7 @@ addons:
     packages:
     - gcc-5
     - g++-5
-    - clang
+    - clang-3.8
+    - lldb-3.8
 
 script: make check
