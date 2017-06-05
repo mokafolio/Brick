@@ -8,7 +8,7 @@ namespace brick
         m_hub(nullptr),
         m_id(-1)
     {
-
+        
     }
 
     Entity::Entity(Hub * _hub, EntityID _id, Size _version) :

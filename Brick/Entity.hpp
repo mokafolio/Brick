@@ -90,6 +90,26 @@ namespace brick
 
         void assignEntity(const Entity & _e);
 
+
+        // @TODO: Remove these, these are only for debuggin right now.
+        // moka, 02/01/2017
+        EntityID id() const
+        {
+            return m_id;
+        }
+
+        stick::Size version() const
+        {
+            return m_version;
+        }
+
+        Hub * hub() const
+        {
+            return m_hub;
+        }
+
+        // End remove
+
     private:
 
         explicit Entity(Hub * _hub, EntityID _id, stick::Size _version);

@@ -180,6 +180,15 @@ const Suite spec[] =
         TypedEntity d = a;
         A e = entityCast<A>(d);
         EXPECT(e);
+
+        EXPECT(e.hub() == d.hub());
+        EXPECT(e.id() == d.id());
+        EXPECT(e.version() == d.version());
+
+        e = c;
+        EXPECT(e.hub() == c.hub());
+        EXPECT(e.id() == c.id());
+        EXPECT(e.version() == c.version());
     },
     SUITE("SharedEntity Tests")
     {
