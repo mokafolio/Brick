@@ -20,7 +20,7 @@ namespace brick
 
     Hub::~Hub()
     {
-        printf("~HUB %lu\n", entityCount());
+
     }
 
     Entity Hub::createEntity()

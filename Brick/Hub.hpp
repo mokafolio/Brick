@@ -207,7 +207,7 @@ namespace brick
         {
             using ValueType = typename T::ValueType;
             stick::Size cid = componentID<T>();
-
+            
             if (m_componentStorage.count() <= cid)
             {
                 m_componentStorage.resize(cid + 1);
@@ -226,9 +226,7 @@ namespace brick
         {
             ComponentStorage * storage = m_alloc->create<ComponentStorageT<VT>>(*m_alloc);
             storage->resize(m_nextEntityID);
-            typedef stick::UniquePtr<ComponentStorage> UPtr;
-            typedef UPtr::Cleanup Cleanup;
-            m_componentStorage[_cid] = UPtr(storage, Cleanup());
+            m_componentStorage[_cid] = stick::UniquePtr<ComponentStorage>(storage, *m_alloc);
         }
 
         template<class T>
