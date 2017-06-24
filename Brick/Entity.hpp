@@ -114,6 +114,8 @@ namespace brick
 
         explicit Entity(Hub * _hub, EntityID _id, stick::Size _version);
 
+        //@TODO: Make id and version 32 bit so the handle does not get tooo huuuuge?
+        // moka, 06/23/2017
         EntityID m_id;
         stick::Size m_version;
         Hub * m_hub;

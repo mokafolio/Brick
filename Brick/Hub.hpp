@@ -14,6 +14,7 @@ namespace brick
 {
     class Entity;
 
+    //@TODO: Add some way to reserve memory/storage for a certain number of entities/components?
     class Hub
     {
         friend class Entity;
