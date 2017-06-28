@@ -312,6 +312,7 @@ namespace brick
         {
             //TODO: find a solution that does not rely on
             //static to make sure component ids are hub specific
+            //and thread safe.
             static stick::Size id = s_nextComponentID++;
             return id;
         }
