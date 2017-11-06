@@ -160,6 +160,9 @@ namespace brick
 
         Entity createEntity();
 
+        template<class...Components>
+        void reserve(stick::Size _count);
+
         Iter begin()
         {
             return Iter(this, 0);
@@ -196,11 +199,19 @@ namespace brick
 
         stick::Allocator & allocator() const;
 
-        //private:
+    private:
+
+        Entity createNextEntity();
 
         void destroyEntity(const Entity & _entity);
 
         bool isValid(EntityID _id, stick::Size _version) const;
+
+        template<class Component>
+        bool cloneComponentImpl(EntityID _from, EntityID _to);
+
+        template<class Component>
+        bool reserveComponentImpl(stick::Size _count);
 
 
         template<class T, class ... Args>
@@ -208,7 +219,7 @@ namespace brick
         {
             using ValueType = typename T::ValueType;
             stick::Size cid = componentID<T>();
-            
+
             if (m_componentStorage.count() <= cid)
             {
                 m_componentStorage.resize(cid + 1);
@@ -218,7 +229,7 @@ namespace brick
             {
                 createStorageForComponentID<ValueType>(cid);
             }
-            (*storage).componentArray<ValueType>()[_id] = (ValueType){std::forward<Args>(_args)...};
+            (*storage).componentArray<ValueType>()[_id] = (ValueType) {std::forward<Args>(_args)...};
             m_componentBitsets[_id][cid] = true;
         }
 
@@ -251,8 +262,12 @@ namespace brick
             auto & storage = m_componentStorage[cid];
             if (!storage)
                 return stick::Maybe<ValueType &>();
+
+            //this is kind of ugly right now as we need to do the lookup
+            //twice to ensure we return a valid reference
             if ((*storage).componentArray<ValueType>()[_id])
                 return *(*storage).componentArray<ValueType>()[_id];
+
             return stick::Maybe<ValueType &>();
         }
 
@@ -266,8 +281,12 @@ namespace brick
             auto & storage = m_componentStorage[cid];
             if (!storage)
                 return stick::Maybe<const ValueType &>();
+
+            //this is kind of ugly right now as we need to do the lookup
+            //twice to ensure we return a valid reference
             if ((*storage).componentArray<ValueType>()[_id])
                 return *(*storage).componentArray<ValueType>()[_id];
+
             return stick::Maybe<const ValueType &>();
         }
 
@@ -353,6 +372,8 @@ namespace brick
 
             virtual void resize(stick::Size _s) = 0;
 
+            virtual void reserve(stick::Size _s) = 0;
+
             virtual void resetComponent(stick::Size _index) = 0;
 
             void * arrayPtr;
@@ -401,6 +422,11 @@ namespace brick
                 componentArray<T>().resize(_s);
             }
 
+            void reserve(stick::Size _s)
+            {
+                componentArray<T>().reserve(_s);
+            }
+
             void resetComponent(stick::Size _index)
             {
                 // reset the mabye!
@@ -412,7 +438,7 @@ namespace brick
         };
 
         template<class T>
-        struct ComponentStorageT < T, typename std::enable_if <!IsCopyConstructible<T>::Value >::type > : public ComponentStorage
+        struct ComponentStorageT < T, typename std::enable_if < !IsCopyConstructible<T>::Value >::type > : public ComponentStorage
         {
             typedef stick::Maybe<T> MaybeType;
             typedef stick::DynamicArray<MaybeType> DynamicArrayType;
@@ -428,6 +454,7 @@ namespace brick
                 m_alloc->destroy(&componentArray<T>());
             }
 
+            //@TODO: BIG N FAT
             void cloneComponent(stick::Size _from, stick::Size _to)
             {
                 //Warning? Fail?
@@ -436,6 +463,11 @@ namespace brick
             void resize(stick::Size _s)
             {
                 componentArray<T>().resize(_s);
+            }
+
+            void reserve(stick::Size _s)
+            {
+                componentArray<T>().reserve(_s);
             }
 
             void resetComponent(stick::Size _index)
@@ -619,20 +651,32 @@ namespace brick
         return ret;
     }
 
+    template<class Component>
+    bool Hub::cloneComponentImpl(EntityID _from, EntityID _to)
+    {
+        stick::Size cid = componentID<Component>();
+        if (cid < m_componentStorage.count())
+        {
+            auto & ptr = m_componentStorage[cid];
+            if (ptr && m_componentBitsets[_from][cid])
+            {
+                ptr->cloneComponent(_from, _to);
+                m_componentBitsets[_to][cid] = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
     template<class ... Components>
     void Hub::cloneComponents(EntityID _from, EntityID _to)
     {
-        for (stick::Size i = 0; i < m_componentStorage.count(); ++i)
-        {
-            auto & ptr = m_componentStorage[i];
-            if (ptr && contains<Components...>(i) && m_componentBitsets[_from][i])
-            {
-                ptr->cloneComponent(_from, _to);
-                m_componentBitsets[_to][i] = true;
-            }
-        }
+        auto list = {cloneComponentImpl<Components>(_from, _to)...};
     }
 
+    //@TODO: Here we are still iterating over all existing components...
+    //maybe add a way to know which components are set on a certain entity
+    //and only iterate over those instead?
     template<class ... Components>
     void Hub::cloneComponentsWithout(EntityID _from, EntityID _to)
     {
@@ -645,6 +689,39 @@ namespace brick
                 m_componentBitsets[_to][i] = true;
             }
         }
+    }
+
+    template<class Component>
+    bool Hub::reserveComponentImpl(stick::Size _count)
+    {
+        using ValueType = typename Component::ValueType;
+        stick::Size cid = componentID<Component>();
+        if (m_componentStorage.count() <= cid)
+        {
+            m_componentStorage.resize(cid + 1);
+        }
+        auto & storage = m_componentStorage[cid];
+        if (!storage)
+        {
+            createStorageForComponentID<ValueType>(cid);
+        }
+        (*storage).reserve(_count);
+        return true;
+    }
+
+    template<class...Components>
+    void Hub::reserve(stick::Size _count)
+    {
+        //first, we reserve _count entity handles
+        stick::Size c = _count - m_freeList.count();
+        for (stick::Size i = 0; i < c; ++i)
+        {
+            Entity e = createNextEntity();
+            m_freeList.append(e.m_id);
+        }
+
+        //reserve the components
+        auto list = {reserveComponentImpl<Components>(_count)...};
     }
 }
 

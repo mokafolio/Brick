@@ -4,6 +4,8 @@
 #include <Brick/EntityID.hpp>
 #include <Stick/Maybe.hpp>
 
+#include <functional>
+
 namespace brick
 {
     class Hub;
@@ -13,6 +15,9 @@ namespace brick
         friend class Hub;
 
     public:
+
+        using ApplyFunction = std::function<void(Entity)>;
+
 
         Entity();
 
@@ -37,8 +42,15 @@ namespace brick
         template<class T>
         bool hasComponent() const;
 
-        template<class T, class ...Args>
+        template<class T, class...Args>
         void set(Args..._args);
+
+        template<class T, class...Args>
+        void setAndApply(ApplyFunction _fn, Args..._args)
+        {
+            set<T>(_args...);
+            _fn(*this);
+        }
 
         template<class T>
         void removeComponent();

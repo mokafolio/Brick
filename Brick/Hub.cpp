@@ -25,28 +25,29 @@ namespace brick
 
     Entity Hub::createEntity()
     {
-        EntityID id;
-        Size handleVersion;
         if (!m_freeList.count())
         {
-            id = m_nextEntityID++;
-            for (auto & ptr : m_componentStorage)
-            {
-                if (ptr)
-                    ptr->resize(id + 1);
-            }
-            ComponentBitset bs(0);
-            m_componentBitsets.append(bs);
-            m_handleVersions.append(0);
-            handleVersion = 0;
+            return createNextEntity();
         }
         else
         {
-            id = m_freeList.last();
+            EntityID id = m_freeList.last();
             m_freeList.removeLast();
-            handleVersion = m_handleVersions[id];
+            return Entity(this, id, m_handleVersions[id]);
         }
-        return Entity(this, id, handleVersion);
+    }
+
+    Entity Hub::createNextEntity()
+    {
+        EntityID id = m_nextEntityID++;
+        for (auto & ptr : m_componentStorage)
+        {
+            if (ptr)
+                ptr->resize(id + 1);
+        }
+        m_componentBitsets.append(ComponentBitset(0));
+        m_handleVersions.append(0);
+        return Entity(this, id, 0);
     }
 
     bool Hub::isValid(EntityID _id, Size _version) const
