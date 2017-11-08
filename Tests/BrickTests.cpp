@@ -37,13 +37,6 @@ struct C : public SharedTypedEntity
 {
 };
 
-template<class...Args>
-inline void fakeInit(Args..._args)
-{
-    Vec3f s{1.0f, 2.0f, 0.3f};
-    s = (Vec3f) {std::forward<Args>(_args)...};
-}
-
 const Suite spec[] =
 {
     SUITE("Basic Tests")
@@ -68,7 +61,7 @@ const Suite spec[] =
         EXPECT(a.get<Position>().x == 1.0f);
         EXPECT(a.get<Position>().y == 2.0f);
         EXPECT(a.get<Position>().z == 3.0f);
-        a.set<Velocity>((Vec3f){1.0f, 2.0f, 3.0f});
+        a.set<Velocity>((Vec3f) {1.0f, 2.0f, 3.0f});
         EXPECT(a.hasComponent<Velocity>());
         a.removeComponent<Velocity>();
         EXPECT(!a.hasComponent<Velocity>());
@@ -244,13 +237,47 @@ const Suite spec[] =
         EXPECT(tent3.referenceCount() == 6);
         EXPECT(tent3.isValid());
         EXPECT(!tent2.isValid());
+    },
+    SUITE("Reserve Tests")
+    {
+        using Position = Component<ComponentName("Position"), Vec3f>;
+        using Velocity = Component<ComponentName("Velocity"), Vec3f>;
+        using Name = Component<ComponentName("Name"), String>;
+
+        Hub hub;
+        hub.reserve<Position, Velocity, Name>(1000);
+
+        Entity inv;
+        EXPECT(!inv.isValid());
+        Entity a = hub.createEntity();
+        EXPECT(a.isValid());
+        EXPECT(hub.entityCount() == 1);
+        EXPECT(!a.hasComponent<Position>());
+        a.set<Position>(1.0f, 2.0f, 3.0f);
+        EXPECT(a.hasComponent<Position>());
+        EXPECT(a.get<Position>().x == 1.0f);
+        EXPECT(a.get<Position>().y == 2.0f);
+        EXPECT(a.get<Position>().z == 3.0f);
+        hub.reserve(2000);
+        a.set<Velocity>((Vec3f) {1.0f, 2.0f, 3.0f});
+        EXPECT(a.hasComponent<Velocity>());
+        a.removeComponent<Velocity>();
+        EXPECT(!a.hasComponent<Velocity>());
+        a.set<Name>("Something");
+        EXPECT(a.hasComponent<Name>());
+        EXPECT(a.maybe<Name>().ensure() == "Something");
+
+        auto c = hub.createEntity();
+        c.set<Name>("doofus");
+        c.set<Velocity>(0.2f, 0.1f, 0.99f);
+        EXPECT(c.get<Name>() == "doofus");
+        EXPECT(c.get<Velocity>().x = 0.2f);
+        EXPECT(c.get<Velocity>().y = 0.1f);
+        EXPECT(c.get<Velocity>().z = 0.99f);
     }
 };
 
 int main(int _argc, const char * _args[])
 {
-    Vec3f t{1.0f, 2.0f, 3.0f};
-    fakeInit((Vec3f) {1.0f, 2.0f, 3.0f});
-
     return runTests(spec, _argc, _args);
 }

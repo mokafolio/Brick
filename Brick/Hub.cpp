@@ -27,7 +27,13 @@ namespace brick
     {
         if (!m_freeList.count())
         {
-            return createNextEntity();
+            Entity ret = createNextEntity();
+            for (auto & ptr : m_componentStorage)
+            {
+                if (ptr)
+                    ptr->resize(ret.m_id + 1);
+            }
+            return ret;
         }
         else
         {
@@ -40,11 +46,6 @@ namespace brick
     Entity Hub::createNextEntity()
     {
         EntityID id = m_nextEntityID++;
-        for (auto & ptr : m_componentStorage)
-        {
-            if (ptr)
-                ptr->resize(id + 1);
-        }
         m_componentBitsets.append(ComponentBitset(0));
         m_handleVersions.append(0);
         return Entity(this, id, 0);

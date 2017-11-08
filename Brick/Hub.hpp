@@ -201,6 +201,9 @@ namespace brick
 
     private:
 
+        template<class...Comps>
+        friend struct ContainsHelper;
+
         Entity createNextEntity();
 
         void destroyEntity(const Entity & _entity);
@@ -227,17 +230,17 @@ namespace brick
             auto & storage = m_componentStorage[cid];
             if (!storage)
             {
-                createStorageForComponentID<ValueType>(cid);
+                createStorageForComponentID<ValueType>(cid, m_nextEntityID);
             }
             (*storage).componentArray<ValueType>()[_id] = (ValueType) {std::forward<Args>(_args)...};
             m_componentBitsets[_id][cid] = true;
         }
 
         template<class VT>
-        void createStorageForComponentID(stick::Size _cid)
+        void createStorageForComponentID(stick::Size _cid, stick::Size _count)
         {
             ComponentStorage * storage = m_alloc->create<ComponentStorageT<VT>>(*m_alloc);
-            storage->resize(m_nextEntityID);
+            storage->resize(_count);
             m_componentStorage[_cid] = stick::UniquePtr<ComponentStorage>(storage, *m_alloc);
         }
 
@@ -309,7 +312,6 @@ namespace brick
             return contains<C1>(_componentID) || contains<C2, Components ...>(_componentID);
         }
 
-
         Entity clone(EntityID _id);
 
         template<class ... Components>
@@ -372,8 +374,6 @@ namespace brick
 
             virtual void resize(stick::Size _s) = 0;
 
-            virtual void reserve(stick::Size _s) = 0;
-
             virtual void resetComponent(stick::Size _index) = 0;
 
             void * arrayPtr;
@@ -422,11 +422,6 @@ namespace brick
                 componentArray<T>().resize(_s);
             }
 
-            void reserve(stick::Size _s)
-            {
-                componentArray<T>().reserve(_s);
-            }
-
             void resetComponent(stick::Size _index)
             {
                 // reset the mabye!
@@ -463,11 +458,6 @@ namespace brick
             void resize(stick::Size _s)
             {
                 componentArray<T>().resize(_s);
-            }
-
-            void reserve(stick::Size _s)
-            {
-                componentArray<T>().reserve(_s);
             }
 
             void resetComponent(stick::Size _index)
@@ -658,6 +648,7 @@ namespace brick
         if (cid < m_componentStorage.count())
         {
             auto & ptr = m_componentStorage[cid];
+            //@TODO: shouldn't the storage always be valid here? replace with assert?
             if (ptr && m_componentBitsets[_from][cid])
             {
                 ptr->cloneComponent(_from, _to);
@@ -683,6 +674,7 @@ namespace brick
         for (stick::Size i = 0; i < m_componentStorage.count(); ++i)
         {
             auto & ptr = m_componentStorage[i];
+            //@TODO: shouldn't the storage always be valid here? replace with assert?
             if (ptr && !contains<Components...>(i) && m_componentBitsets[_from][i])
             {
                 ptr->cloneComponent(_from, _to);
@@ -700,28 +692,64 @@ namespace brick
         {
             m_componentStorage.resize(cid + 1);
         }
+        stick::Size s = std::max(_count, m_nextEntityID);
         auto & storage = m_componentStorage[cid];
         if (!storage)
         {
-            createStorageForComponentID<ValueType>(cid);
+            createStorageForComponentID<ValueType>(cid, s);
         }
-        (*storage).reserve(_count);
+        else
+        {
+            storage->resize(s);
+        }
         return true;
     }
+
+    template<class...Comps>
+    struct ContainsHelper
+    {
+        static bool contains(Hub & _h, stick::Size _i)
+        {
+            return _h.contains<Comps...>(_i);
+        }
+    };
+
+    template<>
+    struct ContainsHelper<>
+    {
+        static bool contains(Hub & _h, stick::Size _i)
+        {
+            return false;
+        }
+    };
 
     template<class...Components>
     void Hub::reserve(stick::Size _count)
     {
         //first, we reserve _count entity handles
         stick::Size c = _count - m_freeList.count();
+        m_freeList.reserve(_count);
         for (stick::Size i = 0; i < c; ++i)
         {
             Entity e = createNextEntity();
             m_freeList.append(e.m_id);
         }
 
-        //reserve the components
-        auto list = {reserveComponentImpl<Components>(_count)...};
+        //reserve the components passed in via template args
+        int dummy[] = {0, reserveComponentImpl<Components>(_count)...};
+
+        //iterate over all component storage and resize the ones that were not passed in
+        for (stick::Size i = 0; i < m_componentStorage.count(); ++i)
+        {
+            auto & ptr = m_componentStorage[i];
+            //@TODO: shouldn't the storage always be valid here? replace with assert?
+            if (ptr && !ContainsHelper<Components...>::contains(*this, i))
+            {
+                //only resize if we are bigger than the already allocated space. (i.e. we don't wanna shrink anything)
+                if (_count > m_nextEntityID)
+                    ptr->resize(_count);
+            }
+        }
     }
 }
 
