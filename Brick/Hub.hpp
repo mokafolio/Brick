@@ -692,7 +692,7 @@ namespace brick
         {
             m_componentStorage.resize(cid + 1);
         }
-        stick::Size s = std::max(_count, m_nextEntityID);
+        stick::Size s = std::max(_count, m_nextEntityID - 1);
         auto & storage = m_componentStorage[cid];
         if (!storage)
         {
@@ -726,28 +726,34 @@ namespace brick
     template<class...Components>
     void Hub::reserve(stick::Size _count)
     {
+        stick::Size startSize = m_nextEntityID;
         //first, we reserve _count entity handles
-        stick::Size c = _count - m_freeList.count();
-        m_freeList.reserve(_count);
-        for (stick::Size i = 0; i < c; ++i)
+        if (_count >= m_nextEntityID)
         {
-            Entity e = createNextEntity();
-            m_freeList.append(e.m_id);
+            stick::Size c = _count - m_nextEntityID;
+            m_freeList.reserve(_count);
+            for (stick::Size i = 0; i < c; ++i)
+            {
+                Entity e = createNextEntity();
+                m_freeList.append(e.m_id);
+            }
         }
 
         //reserve the components passed in via template args
         int dummy[] = {0, reserveComponentImpl<Components>(_count)...};
 
-        //iterate over all component storage and resize the ones that were not passed in
-        for (stick::Size i = 0; i < m_componentStorage.count(); ++i)
+        //only resize if we are bigger than the already allocated space. (i.e. we don't wanna shrink anything)
+        if (_count > startSize)
         {
-            auto & ptr = m_componentStorage[i];
-            //@TODO: shouldn't the storage always be valid here? replace with assert?
-            if (ptr && !ContainsHelper<Components...>::contains(*this, i))
+            //iterate over all component storage and resize the ones that were not passed in
+            for (stick::Size i = 0; i < m_componentStorage.count(); ++i)
             {
-                //only resize if we are bigger than the already allocated space. (i.e. we don't wanna shrink anything)
-                if (_count > m_nextEntityID)
+                auto & ptr = m_componentStorage[i];
+                //@TODO: shouldn't the storage always be valid here? replace with assert?
+                if (ptr && !ContainsHelper<Components...>::contains(*this, i))
+                {
                     ptr->resize(_count);
+                }
             }
         }
     }

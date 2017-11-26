@@ -10,7 +10,7 @@ namespace brick
     class Component
     {
     public:
-        
+
         using ValueType = T;
 
         static const stick::String & name()

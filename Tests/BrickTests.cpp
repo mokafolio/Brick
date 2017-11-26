@@ -245,7 +245,7 @@ const Suite spec[] =
         using Name = Component<ComponentName("Name"), String>;
 
         Hub hub;
-        hub.reserve<Position, Velocity, Name>(1000);
+        hub.reserve<Position, Velocity, Name>(100);
 
         Entity inv;
         EXPECT(!inv.isValid());
@@ -258,7 +258,9 @@ const Suite spec[] =
         EXPECT(a.get<Position>().x == 1.0f);
         EXPECT(a.get<Position>().y == 2.0f);
         EXPECT(a.get<Position>().z == 3.0f);
-        hub.reserve(2000);
+
+        hub.reserve<Position, Velocity>(1000);
+
         a.set<Velocity>((Vec3f) {1.0f, 2.0f, 3.0f});
         EXPECT(a.hasComponent<Velocity>());
         a.removeComponent<Velocity>();
@@ -274,6 +276,9 @@ const Suite spec[] =
         EXPECT(c.get<Velocity>().x = 0.2f);
         EXPECT(c.get<Velocity>().y = 0.1f);
         EXPECT(c.get<Velocity>().z = 0.99f);
+
+        a.destroy();
+        c.destroy();
     }
 };
 
