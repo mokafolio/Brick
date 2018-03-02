@@ -224,12 +224,6 @@ const Suite spec[] =
         array.append(tent2);
         array.append(tent2);
         array.append(tent2);
-        // std::vector<C> array;
-        // array.push_back(tent2);
-        // array.push_back(tent2);
-        // array.push_back(tent2);
-        // array.push_back(tent2);
-        // array.push_back(tent2);
 
         printf("WHAT %lu\n", tent2.referenceCount());
         EXPECT(tent2.referenceCount() == 6);
