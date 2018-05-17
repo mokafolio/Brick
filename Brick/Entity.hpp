@@ -43,6 +43,9 @@ namespace brick
         bool hasComponent() const;
 
         template<class T, class...Args>
+        T & ensureComponent(Args..._args);
+
+        template<class T, class...Args>
         void set(Args..._args);
 
         template<class T, class...Args>
@@ -99,9 +102,6 @@ namespace brick
 
         void assignEntity(const Entity & _e);
 
-
-        // @TODO: Remove these, these are only for debuggin right now.
-        // moka, 02/01/2017
         EntityID id() const
         {
             return m_id;
@@ -116,8 +116,6 @@ namespace brick
         {
             return m_hub;
         }
-
-        // End remove
 
     private:
 
@@ -154,6 +152,16 @@ namespace brick
     {
         STICK_ASSERT(isValid());
         return m_hub->hasComponent<T>(m_id);
+    }
+
+    template<class T, class...Args>
+    T & Entity::ensureComponent(Args..._args)
+    {
+        if(!hasComponent<T>())
+        {
+            set<T>(std::forward<Args>(_args)...);
+        }
+        return get<T>();
     }
 
     template<class T>
