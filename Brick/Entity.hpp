@@ -43,7 +43,7 @@ namespace brick
         bool hasComponent() const;
 
         template<class T, class...Args>
-        T & ensureComponent(Args..._args);
+        typename T::ValueType & ensureComponent(Args..._args);
 
         template<class T, class...Args>
         void set(Args..._args);
@@ -155,7 +155,7 @@ namespace brick
     }
 
     template<class T, class...Args>
-    T & Entity::ensureComponent(Args..._args)
+    typename T::ValueType & Entity::ensureComponent(Args..._args)
     {
         if(!hasComponent<T>())
         {
